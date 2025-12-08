@@ -54,11 +54,12 @@ MIDDLEWARE = [
 
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True   # ✅ Safe for APIs
 CSRF_TRUSTED_ORIGINS = [
-    "https://phishing-url-ypra.onrender.com",
+    "https://phishing-url-six.vercel.app",
 ]
 
 ROOT_URLCONF = "core.urls"
