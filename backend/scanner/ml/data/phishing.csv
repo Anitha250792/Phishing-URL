@@ -1,0 +1,4 @@
+url
+http://malicious-example.com/login
+http://192.168.1.1/confirm
+http://secure-bank.login.attacker.com
