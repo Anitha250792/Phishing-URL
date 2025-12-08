@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getHistory } from "../api/history";
 import { useNavigate } from "react-router-dom";
 
-export default function History() {
+export default function HistoryPage() {
   const [scans, setScans] = useState([]);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ export default function History() {
     try {
       const data = await getHistory();
       setScans(data);
+      setError("");
     } catch (err) {
       setError("Failed to load history");
     }
@@ -46,7 +47,7 @@ export default function History() {
         )}
 
         {/* NO DATA */}
-        {scans.length === 0 ? (
+        {!error && scans.length === 0 ? (
           <p className="text-gray-500 text-center text-lg">No scans found.</p>
         ) : (
           <div className="overflow-x-auto">
@@ -62,10 +63,8 @@ export default function History() {
 
               <tbody className="divide-y">
                 {scans.map((scan) => (
-                  <tr
-                    key={scan.id}
-                    className="hover:bg-indigo-50 transition"
-                  >
+                  <tr key={scan.id} className="hover:bg-indigo-50 transition">
+
                     {/* URL */}
                     <td className="p-3 break-all text-blue-600 underline">
                       {scan.url}
@@ -78,17 +77,27 @@ export default function History() {
                           ? "text-green-600"
                           : scan.verdict === "Suspicious"
                           ? "text-yellow-600"
-                          : "text-red-600"
+                          : scan.verdict === "Phishing"
+                          ? "text-red-600"
+                          : "text-gray-500"
                       }`}
                     >
-                      {scan.verdict || "N/A"}
+                      {scan.verdict || "Pending"}
                     </td>
 
                     {/* RISK */}
                     <td className="p-3 text-center font-semibold">
-                      {scan.risk_score !== null && scan.risk_score !== undefined
-                        ? `${scan.risk_score}%`
-                        : "N/A"}
+                      <span
+                        className={`px-3 py-1 rounded-full text-white text-sm ${
+                          scan.risk_score >= 70
+                            ? "bg-red-500"
+                            : scan.risk_score >= 40
+                            ? "bg-yellow-500"
+                            : "bg-green-500"
+                        }`}
+                      >
+                        {scan.risk_score ?? 0}%
+                      </span>
                     </td>
 
                     {/* DATE */}
