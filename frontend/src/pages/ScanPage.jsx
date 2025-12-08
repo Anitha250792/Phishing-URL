@@ -72,7 +72,7 @@ export default function ScanPage() {
           disabled={loading}
           className="w-full py-2 rounded bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold hover:opacity-90 disabled:opacity-60"
         >
-          {loading ? "🔍 Scanning..." : "🚀 Scan Website"}
+          {loading ? "🔍 Scanning..." : "Scan Website"}
         </button>
 
         <Link

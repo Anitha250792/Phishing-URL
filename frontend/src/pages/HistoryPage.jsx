@@ -1,87 +1,109 @@
-import React, { useEffect, useState } from "react";
-import { fetchHistory } from "../api/scan";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getHistory } from "../api/history";
+import { useNavigate } from "react-router-dom";
 
-export default function HistoryPage() {
-  const [items, setItems] = useState([]);
+export default function History() {
+  const [scans, setScans] = useState([]);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    async function load() {
-      try {
-        const data = await fetchHistory();
-        setItems(data);
-      } catch (err) {
-        setError("Failed to load history");
-        console.error(err);
-      }
-    }
-    load();
+    loadHistory();
   }, []);
 
+  async function loadHistory() {
+    try {
+      const data = await getHistory();
+      setScans(data);
+    } catch (err) {
+      setError("Failed to load history");
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-200 p-6">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
+    <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-indigo-200 to-purple-300 p-4">
+      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-5xl">
 
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-indigo-600">
+        {/* HEADER */}
+        <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
+          <h2 className="text-3xl font-bold text-indigo-700 flex items-center gap-2">
             📜 Scan History Dashboard
-          </h1>
+          </h2>
 
-          <Link
-            to="/"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          <button
+            onClick={() => navigate("/")}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2 rounded-lg font-semibold shadow hover:scale-105 transition"
           >
             ⬅ Back to Scan
-          </Link>
+          </button>
         </div>
 
+        {/* ERROR */}
         {error && (
-          <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
-            {error}
+          <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-center font-semibold">
+            ❌ {error}
           </div>
         )}
 
-        {items.length === 0 && (
-          <div className="text-gray-500 text-center">
-            No scans found.
+        {/* NO DATA */}
+        {scans.length === 0 ? (
+          <p className="text-gray-500 text-center text-lg">No scans found.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border rounded-lg overflow-hidden">
+              <thead className="bg-indigo-700 text-white">
+                <tr>
+                  <th className="p-3 text-left">URL</th>
+                  <th className="p-3 text-center">Verdict</th>
+                  <th className="p-3 text-center">Risk</th>
+                  <th className="p-3 text-center">Date</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y">
+                {scans.map((scan) => (
+                  <tr
+                    key={scan.id}
+                    className="hover:bg-indigo-50 transition"
+                  >
+                    {/* URL */}
+                    <td className="p-3 break-all text-blue-600 underline">
+                      {scan.url}
+                    </td>
+
+                    {/* VERDICT */}
+                    <td
+                      className={`p-3 font-bold text-center ${
+                        scan.verdict === "Safe"
+                          ? "text-green-600"
+                          : scan.verdict === "Suspicious"
+                          ? "text-yellow-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {scan.verdict || "N/A"}
+                    </td>
+
+                    {/* RISK */}
+                    <td className="p-3 text-center font-semibold">
+                      {scan.risk_score !== null && scan.risk_score !== undefined
+                        ? `${scan.risk_score}%`
+                        : "N/A"}
+                    </td>
+
+                    {/* DATE */}
+                    <td className="p-3 text-center text-sm text-gray-600">
+                      {scan.created_at
+                        ? new Date(scan.created_at).toLocaleString()
+                        : "N/A"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 
-        <div className="space-y-4">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="border rounded-lg p-4 shadow-sm bg-gray-50"
-            >
-              <p className="text-sm text-gray-500">
-                {new Date(item.created_at).toLocaleString()}
-              </p>
-
-              <p className="mt-1 font-medium">
-                🔗 <span className="text-blue-600">{item.url}</span>
-              </p>
-
-              {item.result ? (
-                <div className="mt-3 p-3 rounded bg-green-100 border border-green-300">
-                  <p>
-                    ✅ <b>Verdict:</b> {item.result.verdict}
-                  </p>
-                  <p>
-                    ⚠️ <b>Risk:</b> {item.result.risk_score}%
-                  </p>
-                  <p>
-                    📝 <b>Reason:</b> {item.result.reason}
-                  </p>
-                </div>
-              ) : (
-                <div className="mt-3 text-sm text-orange-600">
-                  ⏳ Still processing...
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
