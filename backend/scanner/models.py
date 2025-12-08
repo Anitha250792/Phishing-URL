@@ -1,24 +1,13 @@
-# scanner/models.py
 import uuid
 from django.db import models
 
 class Scan(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     url = models.URLField()
-    normalized_url = models.URLField(blank=True)
-    status = models.CharField(max_length=20, default="queued")
+    verdict = models.CharField(max_length=20, default="Pending")
+    risk_score = models.IntegerField(default=0)
+    reason = models.TextField(default="Scanning in progress")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.url
-
-
-class ScanResult(models.Model):
-    scan = models.OneToOneField(Scan, on_delete=models.CASCADE, related_name="result")
-    verdict = models.CharField(max_length=50)
-    risk_score = models.FloatField()
-    reason = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.verdict

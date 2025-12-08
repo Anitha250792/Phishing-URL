@@ -1,48 +1,43 @@
-from rest_framework import generics
-from rest_framework.generics import CreateAPIView, RetrieveAPIView, ListAPIView
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Scan, ScanResult
-from .serializers import ScanSerializer, ScanResultSerializer
-from .tasks import process_scan_task
+from .models import Scan
+from .serializers import ScanSerializer
+import random
 
 
-# ✅ CREATE SCAN (SYNC VERSION - NO CELERY)
-class ScanCreateView(CreateAPIView):
-    queryset = Scan.objects.all()
-    serializer_class = ScanSerializer
+# ✅ CREATE SCAN
+@api_view(["POST"])
+def create_scan(request):
+    url = request.data.get("url")
 
-    def perform_create(self, serializer):
-        scan = serializer.save(status="processing")
+    verdict = random.choice(["Safe", "Suspicious", "Phishing"])
+    risk_score = random.randint(10, 95)
 
-        # ✅ DIRECT FUNCTION CALL (instead of .delay())
-        process_scan_task(str(scan.id))
+    scan = Scan.objects.create(
+        url=url,
+        verdict=verdict,
+        risk_score=risk_score,
+        reason="AI risk analysis completed"
+    )
+
+    serializer = ScanSerializer(scan)
+    return Response(serializer.data)
 
 
-# ✅ GET SCAN DETAILS
-class ScanDetailView(generics.RetrieveAPIView):
-    queryset = Scan.objects.all()
-    serializer_class = ScanSerializer
-    lookup_field = "id"   # ✅ REQUIRED for UUID lookup
-
-
-# ✅ GET FINAL RESULT
-class ScanResultView(RetrieveAPIView):
-    queryset = ScanResult.objects.all()
-    serializer_class = ScanResultSerializer
-
-    def get(self, request, *args, **kwargs):
-        scan_id = kwargs.get("id")
-
-        try:
-            result = ScanResult.objects.get(scan_id=scan_id)
-            serializer = ScanResultSerializer(result)
-            return Response(serializer.data)
-        except ScanResult.DoesNotExist:
-            return Response({"error": "Result not ready"}, status=404)
+# ✅ GET SCAN RESULT
+@api_view(["GET"])
+def scan_result(request, scan_id):
+    try:
+        scan = Scan.objects.get(id=scan_id)
+        serializer = ScanSerializer(scan)
+        return Response(serializer.data)
+    except Scan.DoesNotExist:
+        return Response({"error": "Scan not found"}, status=404)
 
 
 # ✅ HISTORY
-
-class HistoryListView(generics.ListAPIView):
-    queryset = Scan.objects.all().order_by("-created_at")
-    serializer_class = ScanSerializer
+@api_view(["GET"])
+def scan_history(request):
+    scans = Scan.objects.all().order_by("-created_at")
+    serializer = ScanSerializer(scans, many=True)
+    return Response(serializer.data)
