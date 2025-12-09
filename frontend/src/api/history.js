@@ -1,7 +1,6 @@
 const API_BASE =
   import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000/api";
 
-// ✅ GET FULL SCAN HISTORY
 export async function getHistory() {
   const res = await fetch(`${API_BASE}/history/?format=json`);
 
