@@ -5,7 +5,9 @@ const API_BASE =
 export async function createScan(url) {
   const res = await fetch(`${API_BASE}/scan/`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({ url }),
   });
 
