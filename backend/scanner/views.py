@@ -1,27 +1,36 @@
 from rest_framework.decorators import api_view
+from rest_framework.generics import CreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from .models import Scan
 from .serializers import ScanSerializer
 import random
 
-# ✅ CREATE SCAN (WORKING, NO CELERY)
-@api_view(["POST"])
-def create_scan(request):
-    url = request.data.get("url")
 
-    verdict = random.choice(["Safe", "Suspicious", "Phishing"])
-    risk_score = random.randint(10, 95)
+# ✅ CREATE SCAN (NO CELERY, SIMPLE WORKING VERSION)
+class ScanCreateView(CreateAPIView):
+    queryset = Scan.objects.all()
+    serializer_class = ScanSerializer
 
-    scan = Scan.objects.create(
-        url=url,
-        verdict=verdict,
-        risk_score=risk_score
-    )
+    def perform_create(self, serializer):
+        url = serializer.validated_data.get("url")
 
-    serializer = ScanSerializer(scan)
-    return Response(serializer.data)
+        verdict = random.choice(["Safe", "Suspicious", "Phishing"])
+        risk_score = random.randint(10, 95)
 
-# ✅ SCAN HISTORY
+        serializer.save(
+            verdict=verdict,
+            risk_score=risk_score,
+        )
+
+
+# ✅ GET SINGLE SCAN RESULT BY ID
+class ScanDetailView(RetrieveAPIView):
+    queryset = Scan.objects.all()
+    serializer_class = ScanSerializer
+    lookup_field = "id"
+
+
+# ✅ SCAN HISTORY (LIST ALL)
 @api_view(["GET"])
 def scan_history(request):
     scans = Scan.objects.all().order_by("-created_at")
