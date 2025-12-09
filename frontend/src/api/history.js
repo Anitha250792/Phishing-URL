@@ -1,4 +1,6 @@
-const API_BASE = import.meta.env.VITE_API_BASE;
+const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  "https://phishing-url-ypra.onrender.com/api";
 
 export async function getHistory() {
   const res = await fetch(`${API_BASE}/history/?format=api`);
@@ -8,5 +10,5 @@ export async function getHistory() {
     throw new Error(txt);
   }
 
-  return await res.json();
+  return res.json();
 }
