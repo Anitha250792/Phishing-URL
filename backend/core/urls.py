@@ -3,5 +3,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include("scanner.urls")),  # ✅ REQUIRED
+
+    # ✅ API ROUTES
+    path("api/", include("scanner.urls")),
 ]
