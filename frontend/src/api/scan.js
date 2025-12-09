@@ -1,5 +1,4 @@
-const API_BASE =
-  import.meta.env.VITE_API_BASE || "https://phishing-url-ypra.onrender.com/api";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 export async function createScan(url) {
   const res = await fetch(`${API_BASE}/scan/`, {
@@ -12,6 +11,14 @@ export async function createScan(url) {
     const txt = await res.text();
     throw new Error(txt);
   }
+
+  return await res.json();
+}
+
+export async function getScanResult(scanId) {
+  const res = await fetch(`${API_BASE}/scan/${scanId}/`);
+
+  if (!res.ok) throw new Error("Result not ready");
 
   return await res.json();
 }
